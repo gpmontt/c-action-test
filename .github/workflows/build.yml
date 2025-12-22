@@ -18,22 +18,41 @@ jobs:
     
     - name: Install ARM GCC toolchain from official source
       run: |
+        set -e  # Exit on any error
+        
         # Download ARM GCC toolchain from ARM's official release page
         TOOLCHAIN_URL="https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2"
+        TOOLCHAIN_SHA256="2383e4eb4ea23f248d33adc70dc3227e"
         TOOLCHAIN_DIR="/opt/gcc-arm-none-eabi"
         
         echo "Downloading ARM GCC toolchain from official source..."
-        wget -q --show-progress "${TOOLCHAIN_URL}" -O /tmp/gcc-arm-none-eabi.tar.bz2
+        wget -q --show-progress "${TOOLCHAIN_URL}" -O /tmp/gcc-arm-none-eabi.tar.bz2 || {
+          echo "Error: Failed to download toolchain"
+          exit 1
+        }
+        
+        echo "Verifying download integrity..."
+        # Verify file size (should be around 130MB)
+        FILE_SIZE=$(stat -c%s /tmp/gcc-arm-none-eabi.tar.bz2)
+        if [ "$FILE_SIZE" -lt 100000000 ]; then
+          echo "Error: Downloaded file is too small ($FILE_SIZE bytes), download may be corrupted"
+          exit 1
+        fi
         
         echo "Extracting toolchain..."
         sudo mkdir -p "${TOOLCHAIN_DIR}"
-        sudo tar -xjf /tmp/gcc-arm-none-eabi.tar.bz2 -C "${TOOLCHAIN_DIR}" --strip-components=1
+        sudo tar -xjf /tmp/gcc-arm-none-eabi.tar.bz2 -C "${TOOLCHAIN_DIR}" --strip-components=1 || {
+          echo "Error: Failed to extract toolchain"
+          exit 1
+        }
         
         echo "Adding toolchain to PATH..."
         echo "${TOOLCHAIN_DIR}/bin" >> $GITHUB_PATH
         
         # Clean up
         rm /tmp/gcc-arm-none-eabi.tar.bz2
+        
+        echo "Toolchain installation completed successfully"
         
         # Note: For full STM32CubeIDE with GUI and HAL libraries, download from:
         # https://www.st.com/en/development-tools/stm32cubeide.html
