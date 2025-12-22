@@ -1,11 +1,12 @@
 # STM32 Embedded Firmware Project with CI/CD
 
-[![Build Firmware](https://github.com/gpmontt/c-action-test/workflows/Build%20Firmware/badge.svg)](https://github.com/gpmontt/c-action-test/actions/workflows/build.yml)
 [![Unit Tests](https://github.com/gpmontt/c-action-test/workflows/Unit%20Tests/badge.svg)](https://github.com/gpmontt/c-action-test/actions/workflows/test.yml)
 [![Static Analysis](https://github.com/gpmontt/c-action-test/workflows/Static%20Analysis/badge.svg)](https://github.com/gpmontt/c-action-test/actions/workflows/static-analysis.yml)
 [![Code Formatting](https://github.com/gpmontt/c-action-test/workflows/Code%20Formatting/badge.svg)](https://github.com/gpmontt/c-action-test/actions/workflows/format.yml)
 
 A complete embedded firmware development environment for STM32 microcontrollers using GCC, featuring automated testing, continuous integration, and delivery workflows with GitHub Actions.
+
+> **Note on CI/CD Build Pipeline**: This project does not include an automated firmware build workflow in CI/CD. STM32 projects using STM32CubeIDE require the full IDE environment with HAL libraries, peripheral configurations, and ST-specific toolchain setup. These dependencies are complex to automate in a CI environment and are better handled locally with STM32CubeIDE installed. The Makefile supports local builds once you have the proper toolchain configured.
 
 ## 🎯 Project Overview
 
@@ -34,7 +35,6 @@ This project demonstrates best practices for embedded firmware development with:
 │   ├── unity/             # Unity test framework
 │   └── Makefile           # Test build system
 ├── .github/workflows/      # CI/CD pipelines
-│   ├── build.yml          # Firmware build
 │   ├── test.yml           # Unit tests
 │   ├── static-analysis.yml # Static code analysis
 │   └── format.yml         # Code formatting check
@@ -188,25 +188,21 @@ find src inc tests -name "*.c" -o -name "*.h" | xargs clang-format -i
 
 GitHub Actions automatically run on every push and pull request:
 
-### 1. **Build Firmware** (`.github/workflows/build.yml`)
-- Installs ARM GCC toolchain
-- Compiles firmware for STM32 target
-- Uploads artifacts (ELF, BIN, HEX files)
-- Reports memory usage
+> **Note**: Firmware build automation is not included. See the note at the top of this README for explanation.
 
-### 2. **Unit Tests** (`.github/workflows/test.yml`)
+### 1. **Unit Tests** (`.github/workflows/test.yml`)
 - Compiles tests with native GCC
 - Runs all test suites
 - Reports test results
 - Uploads test artifacts
 
-### 3. **Static Analysis** (`.github/workflows/static-analysis.yml`)
+### 2. **Static Analysis** (`.github/workflows/static-analysis.yml`)
 - Runs cppcheck on source code
 - Checks for common coding errors
 - Enforces coding standards
 - Fails on critical issues
 
-### 4. **Code Formatting** (`.github/workflows/format.yml`)
+### 3. **Code Formatting** (`.github/workflows/format.yml`)
 - Checks code formatting with clang-format
 - Ensures consistent code style
 - Fails if formatting is incorrect
@@ -218,10 +214,10 @@ Check the [Actions tab](https://github.com/gpmontt/c-action-test/actions) to see
 ## 🎓 Learning Resources
 
 This project is designed to help understand:
-- Embedded firmware build systems
-- Cross-compilation for ARM
+- Embedded firmware build systems (local development)
+- Cross-compilation for ARM (via Makefile)
 - Unit testing for embedded systems
-- CI/CD for firmware development
+- CI/CD for code quality (testing, analysis, formatting)
 - Static analysis and code quality
 
 ## 🔧 Configuration
