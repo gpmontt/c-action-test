@@ -16,8 +16,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Install GCC
+    - name: Install GCC for native unit tests
       run: |
+        # Unit tests run natively on the host (not cross-compiled for ARM)
+        # This is standard practice for embedded unit testing
+        # For HAL-based integration tests, use the ARM toolchain in build.yml
         sudo apt-get update
         sudo apt-get install -y gcc build-essential
     

@@ -16,18 +16,26 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Install ARM GCC toolchain
+    - name: Install ARM GCC toolchain from official source
       run: |
-        # Install ARM GCC from ARM's official repository or Ubuntu repos
-        sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa || true
-        sudo apt-get update
+        # Download ARM GCC toolchain from ARM's official release page
+        TOOLCHAIN_URL="https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2"
+        TOOLCHAIN_DIR="/opt/gcc-arm-none-eabi"
         
-        # Install gcc-arm-none-eabi from ARM or fallback to Ubuntu repos
-        sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi \
-          libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib || \
-          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+        echo "Downloading ARM GCC toolchain from official source..."
+        wget -q --show-progress "${TOOLCHAIN_URL}" -O /tmp/gcc-arm-none-eabi.tar.bz2
         
-        # Note: For full STM32CubeIDE with GUI, download from:
+        echo "Extracting toolchain..."
+        sudo mkdir -p "${TOOLCHAIN_DIR}"
+        sudo tar -xjf /tmp/gcc-arm-none-eabi.tar.bz2 -C "${TOOLCHAIN_DIR}" --strip-components=1
+        
+        echo "Adding toolchain to PATH..."
+        echo "${TOOLCHAIN_DIR}/bin" >> $GITHUB_PATH
+        
+        # Clean up
+        rm /tmp/gcc-arm-none-eabi.tar.bz2
+        
+        # Note: For full STM32CubeIDE with GUI and HAL libraries, download from:
         # https://www.st.com/en/development-tools/stm32cubeide.html
     
     - name: Verify toolchain installation
