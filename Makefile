@@ -8,6 +8,10 @@ PROJECT = stm32_firmware
 # Target MCU
 MCU = cortex-m4
 
+# Device specific (for flashing/debugging)
+# Change this to match your specific STM32 device
+DEVICE ?= STM32F407VG
+
 # Toolchain
 # First check if STM32CubeIDE toolchain is available, then fallback to system
 STM32CUBE_GCC_PATH ?= /opt/st/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.*/tools/bin
@@ -122,9 +126,10 @@ flash-stlink: $(BUILD_DIR)/$(PROJECT).bin
 # Flash using J-Link
 flash-jlink: $(BUILD_DIR)/$(PROJECT).hex
 	@echo "Flashing with J-Link..."
-	@echo "loadfile $<\nr\ng\nq" > /tmp/flash_jlink.cmd
-	JLinkExe -device STM32F407VG -if SWD -speed 4000 -CommanderScript /tmp/flash_jlink.cmd
-	@rm -f /tmp/flash_jlink.cmd
+	@TMPFILE=$$(mktemp /tmp/flash_jlink_XXXXXX.cmd); \
+	echo "loadfile $<\nr\ng\nq" > $$TMPFILE; \
+	JLinkExe -device $(DEVICE) -if SWD -speed 4000 -CommanderScript $$TMPFILE; \
+	rm -f $$TMPFILE
 
 # Flash using OpenOCD with ST-Link
 flash-openocd: $(BUILD_DIR)/$(PROJECT).elf
@@ -143,7 +148,7 @@ help:
 	@echo "  disasm       - Generate disassembly listing"
 	@echo "  flash-stlink - Flash firmware using ST-Link"
 	@echo "  flash-jlink  - Flash firmware using J-Link"
-	@echo "  flash-openocd- Flash firmware using OpenOCD"
+	@echo "  flash-openocd - Flash firmware using OpenOCD"
 	@echo "  help         - Show this help message"
 	@echo ""
 	@echo "Requirements:"
