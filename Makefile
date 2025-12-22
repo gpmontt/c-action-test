@@ -9,7 +9,22 @@ PROJECT = stm32_firmware
 MCU = cortex-m4
 
 # Toolchain
-PREFIX = arm-none-eabi-
+# First check if STM32CubeIDE toolchain is available, then fallback to system
+STM32CUBE_GCC_PATH ?= /opt/st/stm32cubeide/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.*/tools/bin
+ARM_TOOLCHAIN_PATH ?= $(shell find $(STM32CUBE_GCC_PATH) -name "arm-none-eabi-gcc" 2>/dev/null | head -1 | xargs dirname 2>/dev/null)
+
+# If STM32CubeIDE not found, check system PATH
+ifeq ($(ARM_TOOLCHAIN_PATH),)
+    ARM_TOOLCHAIN_PATH := $(shell dirname $$(which arm-none-eabi-gcc 2>/dev/null) 2>/dev/null)
+endif
+
+# If still not found, use relative path (assumes it's in PATH)
+ifeq ($(ARM_TOOLCHAIN_PATH),)
+    PREFIX = arm-none-eabi-
+else
+    PREFIX = $(ARM_TOOLCHAIN_PATH)/arm-none-eabi-
+endif
+
 CC = $(PREFIX)gcc
 AS = $(PREFIX)as
 LD = $(PREFIX)ld
@@ -99,18 +114,40 @@ size: $(BUILD_DIR)/$(PROJECT).elf
 disasm: $(BUILD_DIR)/$(PROJECT).elf
 	@$(OBJDUMP) -d $< > $(BUILD_DIR)/$(PROJECT).lst
 
+# Flash using ST-Link
+flash-stlink: $(BUILD_DIR)/$(PROJECT).bin
+	@echo "Flashing with ST-Link..."
+	st-flash write $< 0x8000000
+
+# Flash using J-Link
+flash-jlink: $(BUILD_DIR)/$(PROJECT).hex
+	@echo "Flashing with J-Link..."
+	@echo "loadfile $<\nr\ng\nq" > /tmp/flash_jlink.cmd
+	JLinkExe -device STM32F407VG -if SWD -speed 4000 -CommanderScript /tmp/flash_jlink.cmd
+	@rm -f /tmp/flash_jlink.cmd
+
+# Flash using OpenOCD with ST-Link
+flash-openocd: $(BUILD_DIR)/$(PROJECT).elf
+	@echo "Flashing with OpenOCD..."
+	openocd -f interface/stlink.cfg -f target/stm32f4x.cfg \
+		-c "program $< verify reset exit"
+
 # Help
 help:
 	@echo "STM32 Firmware Makefile"
 	@echo "======================="
 	@echo "Targets:"
-	@echo "  all      - Build the project (default)"
-	@echo "  clean    - Remove build artifacts"
-	@echo "  size     - Display size information"
-	@echo "  disasm   - Generate disassembly listing"
-	@echo "  help     - Show this help message"
+	@echo "  all          - Build the project (default)"
+	@echo "  clean        - Remove build artifacts"
+	@echo "  size         - Display size information"
+	@echo "  disasm       - Generate disassembly listing"
+	@echo "  flash-stlink - Flash firmware using ST-Link"
+	@echo "  flash-jlink  - Flash firmware using J-Link"
+	@echo "  flash-openocd- Flash firmware using OpenOCD"
+	@echo "  help         - Show this help message"
 	@echo ""
 	@echo "Requirements:"
 	@echo "  - arm-none-eabi-gcc toolchain installed"
+	@echo "  - For flashing: st-flash, JLinkExe, or openocd"
 
-.PHONY: all clean size disasm help
+.PHONY: all clean size disasm flash-stlink flash-jlink flash-openocd help

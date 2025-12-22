@@ -224,6 +224,67 @@ cd tests && make test
 3. Makefile will automatically pick up new files
 4. Add corresponding unit tests
 
+## 🔌 Flashing and Debugging
+
+### Flashing Options
+
+This project supports multiple flashing methods:
+
+#### 1. ST-Link (Recommended for ST boards)
+```bash
+# Using st-flash utility
+st-flash write build/stm32_firmware.bin 0x8000000
+
+# Using OpenOCD
+openocd -f interface/stlink.cfg -f target/stm32f4x.cfg \
+  -c "program build/stm32_firmware.elf verify reset exit"
+```
+
+#### 2. J-Link (Segger J-Link)
+J-Link is an excellent option for professional debugging and flashing:
+
+```bash
+# Using JLinkExe
+JLinkExe -device STM32F407VG -if SWD -speed 4000 -autoconnect 1
+# In J-Link console:
+# loadfile build/stm32_firmware.hex
+# r (reset)
+# g (go)
+# q (quit)
+
+# Using command file for automation
+echo "loadfile build/stm32_firmware.hex
+r
+g
+q" > flash.jlink
+JLinkExe -device STM32F407VG -if SWD -speed 4000 -CommanderScript flash.jlink
+```
+
+**J-Link Advantages:**
+- Professional-grade debug probe
+- Fast flash programming
+- RTT (Real-Time Transfer) for logging
+- Excellent GDB server support
+- Wide device support
+
+#### 3. GDB with J-Link
+```bash
+# Terminal 1: Start J-Link GDB Server
+JLinkGDBServer -device STM32F407VG -if SWD -speed 4000
+
+# Terminal 2: Connect with GDB
+arm-none-eabi-gdb build/stm32_firmware.elf
+(gdb) target remote localhost:2331
+(gdb) load
+(gdb) monitor reset
+(gdb) continue
+```
+
+### Hardware Setup
+- Connect your debug probe (ST-Link or J-Link) to the SWD pins
+- Typical connections: SWDIO, SWCLK, GND, VCC (optional)
+- Ensure proper power supply to the target board
+
 ## 🔐 Security
 
 ### Reporting Vulnerabilities

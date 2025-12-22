@@ -16,15 +16,27 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Install ARM GCC toolchain
+    - name: Install STM32CubeIDE toolchain
       run: |
+        # Download and install STM32CubeIDE (includes ARM GCC toolchain)
+        # Using the official ST repository for security
+        wget -qO- https://www.st.com/resource/en/utilities/st-link_linux_amd64.tar.gz | tar xz -C /tmp || true
+        
+        # Alternative: Install ARM GCC from ARM's official repository
+        sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa || true
         sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
+        
+        # Install gcc-arm-none-eabi from ARM or fallback to Ubuntu repos
+        sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi \
+          libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib || \
+          sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi
     
     - name: Verify toolchain installation
       run: |
+        which arm-none-eabi-gcc || echo "Toolchain not in PATH"
         arm-none-eabi-gcc --version
         arm-none-eabi-objcopy --version
+        echo "Toolchain path: $(which arm-none-eabi-gcc)"
     
     - name: Build firmware
       run: make all

@@ -60,6 +60,15 @@ This project demonstrates best practices for embedded firmware development with:
 
 ### Install ARM Toolchain
 
+**Option 1: STM32CubeIDE (Recommended - includes all ST tools)**
+Download and install [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html) which includes:
+- ARM GCC toolchain
+- ST-Link utilities
+- Debugging tools
+- HAL libraries
+
+**Option 2: Standalone ARM GCC**
+
 **Ubuntu/Debian:**
 ```bash
 sudo apt-get update
@@ -95,6 +104,23 @@ Build outputs:
 - `build/stm32_firmware.bin` - Binary image for flashing
 - `build/stm32_firmware.hex` - Intel HEX format
 - `build/stm32_firmware.map` - Memory map
+
+### Flash Firmware to Hardware
+
+**Using ST-Link:**
+```bash
+make flash-stlink
+```
+
+**Using J-Link (Segger):**
+```bash
+make flash-jlink
+```
+
+**Using OpenOCD:**
+```bash
+make flash-openocd
+```
 
 ### Run Unit Tests
 
