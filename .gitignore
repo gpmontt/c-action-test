@@ -1,0 +1,34 @@
+# Build directories
+build/
+Build/
+BUILD/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Build artifacts
+*.o
+*.elf
+*.hex
+*.bin
+*.map
+*.d
+*.lst
+*.su
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Temporary files
+/tmp/
+*.tmp
+*.bak

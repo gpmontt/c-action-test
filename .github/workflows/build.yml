@@ -1,0 +1,52 @@
+name: STM32L4 Build
+
+on:
+  push:
+    branches: [ main, develop, copilot/** ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Install ARM GCC Toolchain
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-arm-none-eabi binutils-arm-none-eabi cmake
+        arm-none-eabi-gcc --version
+        
+    - name: Create build directory
+      run: mkdir -p build
+      
+    - name: Configure CMake
+      run: |
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        
+    - name: Build project
+      run: |
+        cd build
+        cmake --build . --config Release
+        
+    - name: List build artifacts
+      run: |
+        cd build
+        ls -lh *.elf *.hex *.bin *.map || true
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: stm32l4-firmware
+        path: |
+          build/*.elf
+          build/*.hex
+          build/*.bin
+          build/*.map
