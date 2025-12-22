@@ -92,7 +92,7 @@ void SystemClock_Config(void)
  */
 void Error_Handler(void)
 {
-    /* User can add his own implementation to report the error */
+    /* User can add their own implementation to report the error */
     while (1)
     {
     }
@@ -108,6 +108,6 @@ void Error_Handler(void)
  */
 void assert_failed(char *file, uint32_t line)
 {
-    /* User can add his own implementation to report the file name and line number */
+    /* User can add their own implementation to report the file name and line number */
 }
 #endif

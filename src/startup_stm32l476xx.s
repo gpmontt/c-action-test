@@ -88,7 +88,6 @@ Infinite_Loop:
 ******************************************************************************/
     .section .isr_vector,"a",%progbits
     .type g_pfnVectors, %object
-    .size g_pfnVectors, .-g_pfnVectors
 
 g_pfnVectors:
     .word _estack
@@ -111,6 +110,8 @@ g_pfnVectors:
     .word PVD_PVM_IRQHandler                /* PVD/PVM through EXTI         */
     .word TAMP_STAMP_IRQHandler             /* Tamper and TimeStamps        */
     .word RTC_WKUP_IRQHandler               /* RTC Wakeup                   */
+
+    .size g_pfnVectors, .-g_pfnVectors
 
 /*******************************************************************************
 *
