@@ -2,7 +2,6 @@
 
 [![Unit Tests](https://github.com/gpmontt/c-action-test/workflows/Unit%20Tests/badge.svg)](https://github.com/gpmontt/c-action-test/actions/workflows/test.yml)
 [![Static Analysis](https://github.com/gpmontt/c-action-test/workflows/Static%20Analysis/badge.svg)](https://github.com/gpmontt/c-action-test/actions/workflows/static-analysis.yml)
-[![Code Formatting](https://github.com/gpmontt/c-action-test/workflows/Code%20Formatting/badge.svg)](https://github.com/gpmontt/c-action-test/actions/workflows/format.yml)
 
 A complete embedded firmware development environment for STM32 microcontrollers using GCC, featuring automated testing, continuous integration, and delivery workflows with GitHub Actions.
 
@@ -12,13 +11,18 @@ A complete embedded firmware development environment for STM32 microcontrollers 
 > 
 > The Makefile supports local builds once you have the proper toolchain configured.
 
+> **Note on Code Formatting Pipeline**: This project does not include automated code formatting checks in CI/CD.
+>
+> Embedded projects often use libraries that have been maintained for years with established coding styles. Many STM32 projects integrate vendor-provided HAL libraries and third-party components that don't follow modern formatting standards. Enforcing automated formatting in CI would require reformatting legacy code and could introduce unnecessary conflicts with upstream library updates.
+>
+> Code formatting can be applied manually to new code using clang-format locally as needed.
+
 ## 🎯 Project Overview
 
 This project demonstrates best practices for embedded firmware development with:
 - **Cross-compilation** for ARM Cortex-M microcontrollers
 - **Unit testing** with Unity framework
 - **Static analysis** with cppcheck
-- **Code formatting** with clang-format
 - **Automated CI/CD** with GitHub Actions
 
 ## 📁 Project Structure
@@ -40,8 +44,7 @@ This project demonstrates best practices for embedded firmware development with:
 │   └── Makefile           # Test build system
 ├── .github/workflows/      # CI/CD pipelines
 │   ├── test.yml           # Unit tests
-│   ├── static-analysis.yml # Static code analysis
-│   └── format.yml         # Code formatting check
+│   └── static-analysis.yml # Static code analysis
 ├── Makefile               # Main build system
 └── README.md              # This file
 ```
@@ -58,7 +61,7 @@ This project demonstrates best practices for embedded firmware development with:
 
 ### For Development (Optional)
 - `cppcheck` - Static code analyzer
-- `clang-format` - Code formatter
+- `clang-format` - Code formatter (for manual formatting of new code)
 
 ## 🚀 Quick Start
 
@@ -176,7 +179,9 @@ Run cppcheck locally:
 cppcheck --enable=all -I inc src/*.c
 ```
 
-### Code Formatting
+### Code Formatting (Optional - Manual)
+
+Code formatting with clang-format can be applied manually to new code as needed:
 
 Check formatting:
 ```bash
@@ -188,11 +193,13 @@ Apply formatting:
 find src inc tests -name "*.c" -o -name "*.h" | xargs clang-format -i
 ```
 
+> **Note**: See the note at the top of this README about why automated formatting is not enforced in CI/CD for embedded projects with legacy libraries.
+
 ## 🤖 CI/CD Pipelines
 
 GitHub Actions automatically run on every push and pull request:
 
-> **Note**: Firmware build automation is not included. See the note at the top of this README for explanation.
+> **Note**: Firmware build automation and code formatting checks are not included. See the notes at the top of this README for explanation.
 
 ### 1. **Unit Tests** (`.github/workflows/test.yml`)
 - Compiles tests with native GCC
@@ -206,11 +213,6 @@ GitHub Actions automatically run on every push and pull request:
 - Enforces coding standards
 - Fails on critical issues
 
-### 3. **Code Formatting** (`.github/workflows/format.yml`)
-- Checks code formatting with clang-format
-- Ensures consistent code style
-- Fails if formatting is incorrect
-
 ## 📊 Workflow Status
 
 Check the [Actions tab](https://github.com/gpmontt/c-action-test/actions) to see workflow runs and download artifacts.
@@ -221,7 +223,7 @@ This project is designed to help understand:
 - Embedded firmware build systems (local development)
 - Cross-compilation for ARM (via Makefile)
 - Unit testing for embedded systems
-- CI/CD for code quality (testing, analysis, formatting)
+- CI/CD for code quality (testing, analysis)
 - Static analysis and code quality
 
 ## 🔧 Configuration
@@ -305,8 +307,7 @@ Based on best practices for embedded CI/CD, consider creating issues for:
 2. Create a feature branch
 3. Make your changes
 4. Run tests: `cd tests && make test`
-5. Check formatting: `make format-check` (if implemented)
-6. Submit a pull request
+5. Submit a pull request
 
 All PRs must pass CI checks before merging.
 
