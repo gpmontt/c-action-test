@@ -6,7 +6,11 @@
 
 A complete embedded firmware development environment for STM32 microcontrollers using GCC, featuring automated testing, continuous integration, and delivery workflows with GitHub Actions.
 
-> **Note on CI/CD Build Pipeline**: This project does not include an automated firmware build workflow in CI/CD. STM32 projects using STM32CubeIDE require the full IDE environment with HAL libraries, peripheral configurations, and ST-specific toolchain setup. These dependencies are complex to automate in a CI environment and are better handled locally with STM32CubeIDE installed. The Makefile supports local builds once you have the proper toolchain configured.
+> **Note on CI/CD Build Pipeline**: This project does not include an automated firmware build workflow in CI/CD. 
+> 
+> STM32 projects using STM32CubeIDE require the full IDE environment with HAL libraries, peripheral configurations, and ST-specific toolchain setup. These dependencies are complex to automate in a CI environment and are better handled locally with STM32CubeIDE installed. 
+> 
+> The Makefile supports local builds once you have the proper toolchain configured.
 
 ## 🎯 Project Overview
 
