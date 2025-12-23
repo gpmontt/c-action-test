@@ -11,11 +11,20 @@ A complete embedded firmware development environment for STM32 microcontrollers 
 > 
 > The Makefile supports local builds once you have the proper toolchain configured.
 
-> **Note on Code Formatting Pipeline**: This project does not include automated code formatting checks in CI/CD.
+> **Note on Code Formatting**: Code formatting tools like clang-format are **not recommended** for STM32CubeIDE projects.
 >
-> Embedded projects often integrate vendor-provided HAL libraries and third-party components that have been maintained for years with established coding styles that don't follow modern formatting standards. Enforcing automated formatting would require reformatting legacy code and create conflicts with upstream library updates.
+> STM32CubeIDE generates code with specific formatting styles that are integral to the IDE's code generation process. Projects include:
+> - **Auto-generated HAL/LL driver code** from STM32CubeMX with ST's formatting conventions
+> - **Vendor middleware** (FreeRTOS, USB, TCP/IP stacks) with their own established styles
+> - **Third-party libraries** maintained for years with different coding standards
 >
-> Code formatting can be applied manually to new code using clang-format locally as needed.
+> Applying clang-format to these files would:
+> - Break the code generation workflow when regenerating from STM32CubeMX
+> - Create merge conflicts when updating vendor libraries
+> - Make it difficult to compare with official ST examples and documentation
+> - Introduce unnecessary diffs that obscure actual code changes
+>
+> **For this reason, clang-format configuration and formatting steps have been intentionally removed from this project.**
 
 ## 🎯 Project Overview
 
@@ -61,7 +70,6 @@ This project demonstrates best practices for embedded firmware development with:
 
 ### For Development (Optional)
 - `cppcheck` - Static code analyzer
-- `clang-format` - Code formatter (for manual formatting of new code)
 
 ## 🚀 Quick Start
 
@@ -179,27 +187,11 @@ Run cppcheck locally:
 cppcheck --enable=all -I inc src/*.c
 ```
 
-### Code Formatting (Optional - Manual)
-
-Code formatting with clang-format can be applied manually to new code as needed:
-
-Check formatting:
-```bash
-find src inc tests -name "*.c" -o -name "*.h" | xargs clang-format --dry-run
-```
-
-Apply formatting:
-```bash
-find src inc tests -name "*.c" -o -name "*.h" | xargs clang-format -i
-```
-
-> **Note**: See the note at the top of this README about why automated formatting is not enforced in CI/CD for embedded projects with legacy libraries.
-
 ## 🤖 CI/CD Pipelines
 
 GitHub Actions automatically run on every push and pull request:
 
-> **Note**: Firmware build automation and code formatting checks are not included. See the notes on Build Pipeline and Code Formatting Pipeline at the top of this README for explanation.
+> **Note**: Firmware build automation is not included. See the note on Build Pipeline at the top of this README for explanation.
 
 ### 1. **Unit Tests** (`.github/workflows/test.yml`)
 - Compiles tests with native GCC
