@@ -13,7 +13,7 @@ A complete embedded firmware development environment for STM32 microcontrollers 
 
 > **Note on Code Formatting Pipeline**: This project does not include automated code formatting checks in CI/CD.
 >
-> Embedded projects often use libraries that have been maintained for years with established coding styles. Many STM32 projects integrate vendor-provided HAL libraries and third-party components that don't follow modern formatting standards. Enforcing automated formatting in CI would require reformatting legacy code and could introduce unnecessary conflicts with upstream library updates.
+> Embedded projects often integrate vendor-provided HAL libraries and third-party components that have been maintained for years with established coding styles that don't follow modern formatting standards. Enforcing automated formatting would require reformatting legacy code and create conflicts with upstream library updates.
 >
 > Code formatting can be applied manually to new code using clang-format locally as needed.
 
@@ -199,7 +199,7 @@ find src inc tests -name "*.c" -o -name "*.h" | xargs clang-format -i
 
 GitHub Actions automatically run on every push and pull request:
 
-> **Note**: Firmware build automation and code formatting checks are not included. See the notes at the top of this README for explanation.
+> **Note**: Firmware build automation and code formatting checks are not included. See the notes on Build Pipeline and Code Formatting Pipeline at the top of this README for explanation.
 
 ### 1. **Unit Tests** (`.github/workflows/test.yml`)
 - Compiles tests with native GCC
