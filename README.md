@@ -1,213 +1,316 @@
-# STM32L4 Embedded Project
+# STM32 Embedded Firmware Project with CI/CD
 
-This is a template project for STM32L4 microcontrollers using GCC and CMake, with automated builds via GitHub Actions. The project is designed to work with STM32Cube tools and includes a "Hello World" LED toggle example.
+[![Unit Tests](https://github.com/gpmontt/c-action-test/workflows/Unit%20Tests/badge.svg)](https://github.com/gpmontt/c-action-test/actions/workflows/test.yml)
+[![Static Analysis](https://github.com/gpmontt/c-action-test/workflows/Static%20Analysis/badge.svg)](https://github.com/gpmontt/c-action-test/actions/workflows/static-analysis.yml)
 
-## Features
+A complete embedded firmware development environment for STM32 microcontrollers using GCC, featuring automated testing, continuous integration, and delivery workflows with GitHub Actions.
 
-- **Microcontroller**: STM32L476RGTx (Cortex-M4 with FPU)
-- **Board**: STM32L476RG-Nucleo (or compatible)
-- **Toolchain**: ARM GCC (arm-none-eabi-gcc)
-- **Build System**: CMake
-- **CI/CD**: GitHub Actions for automated builds
-- **Example**: LED toggle (LD1 on PA5) - "Hello World" for embedded systems
+> **Note on CI/CD Build Pipeline**: This project does not include an automated firmware build workflow in CI/CD. 
+> 
+> STM32 projects using STM32CubeIDE require the full IDE environment with HAL libraries, peripheral configurations, and ST-specific toolchain setup. These dependencies are complex to automate in a CI environment and are better handled locally with STM32CubeIDE installed. 
+> 
+> The Makefile supports local builds once you have the proper toolchain configured.
 
-## Hardware Setup
+> **Note on Code Formatting**: Code formatting tools like clang-format are **not recommended** for STM32CubeIDE projects.
+>
+> STM32CubeIDE generates code with specific formatting styles that are integral to the IDE's code generation process. Projects include:
+> - **Auto-generated HAL/LL driver code** from STM32CubeMX with ST's formatting conventions
+> - **Vendor middleware** (FreeRTOS, USB, TCP/IP stacks) with their own established styles
+> - **Third-party libraries** maintained for years with different coding standards
+>
+> Applying clang-format to these files would:
+> - Break the code generation workflow when regenerating from STM32CubeMX
+> - Create merge conflicts when updating vendor libraries
+> - Make it difficult to compare with official ST examples and documentation
+> - Introduce unnecessary diffs that obscure actual code changes
+>
+> **For this reason, clang-format configuration and formatting steps have been intentionally removed from this project.**
 
-This project is configured for the **STM32L476RG-Nucleo** development board with default configuration:
-- **LD1 (User LED)**: Connected to PA5 (GPIO Port A, Pin 5)
-- **Clock**: HSI 16 MHz (default after reset)
+## 🎯 Project Overview
 
-The example code toggles LD1 continuously to demonstrate basic GPIO control.
+This project demonstrates best practices for embedded firmware development with:
+- **Cross-compilation** for ARM Cortex-M microcontrollers
+- **Unit testing** with Unity framework
+- **Static analysis** with cppcheck
+- **Automated CI/CD** with GitHub Actions
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 .
-├── src/                          # Source files
-│   ├── main.c                    # Main application
-│   └── startup_stm32l476xx.s     # Startup code
-├── include/                      # Header files
-│   └── stm32l4xx.h               # Device header
-├── cmake/                        # CMake modules
-│   └── arm-none-eabi-gcc.cmake   # ARM GCC toolchain file
-├── .github/workflows/            # GitHub Actions workflows
-│   └── build.yml                 # Build workflow
-├── CMakeLists.txt                # CMake build configuration
-├── STM32L476RGTx_FLASH.ld        # Linker script
-└── README.md                     # This file
+├── src/                    # Source files
+│   ├── main.c             # Main application
+│   └── utils.c            # Utility functions
+├── inc/                    # Header files
+│   ├── main.h
+│   └── utils.h
+├── startup/                # Startup code
+│   ├── startup_stm32.c    # Vector table and reset handler
+│   └── stm32_linker.ld    # Linker script
+├── tests/                  # Unit tests
+│   ├── test_main.c        # Test cases
+│   ├── unity/             # Unity test framework
+│   └── Makefile           # Test build system
+├── .github/workflows/      # CI/CD pipelines
+│   ├── test.yml           # Unit tests
+│   └── static-analysis.yml # Static code analysis
+├── Makefile               # Main build system
+└── README.md              # This file
 ```
 
-## Prerequisites
+## 🛠️ Prerequisites
 
-### Local Development
+### For Building Firmware (ARM Target)
+- `arm-none-eabi-gcc` - ARM cross-compiler toolchain
+- `make` - Build automation tool
 
-To build this project locally, you need:
+### For Unit Tests (Native)
+- `gcc` - Native C compiler
+- `make` - Build automation tool
 
-1. **ARM GCC Toolchain**: Install arm-none-eabi-gcc
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get update
-   sudo apt-get install gcc-arm-none-eabi binutils-arm-none-eabi
-   
-   # macOS
-   brew install arm-none-eabi-gcc
-   
-   # Windows
-   # Download from: https://developer.arm.com/downloads/-/gnu-rm
-   ```
+### For Development (Optional)
+- `cppcheck` - Static code analyzer
 
-2. **CMake**: Version 3.15 or higher
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get install cmake
-   
-   # macOS
-   brew install cmake
-   
-   # Windows
-   # Download from: https://cmake.org/download/
-   ```
+## 🚀 Quick Start
 
-3. **Make** (optional, for easier building)
+### Install ARM Toolchain
 
-## Building the Project
+**Option 1: STM32CubeIDE (Recommended - includes all ST tools)**
+Download and install [STM32CubeIDE](https://www.st.com/en/development-tools/stm32cubeide.html) which includes:
+- ARM GCC toolchain
+- ST-Link utilities
+- Debugging tools
+- HAL libraries
 
-### Using CMake (Recommended)
+**Option 2: Standalone ARM GCC**
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get update
+sudo apt-get install gcc-arm-none-eabi binutils-arm-none-eabi
+```
+
+**macOS:**
+```bash
+brew install arm-none-eabi-gcc
+```
+
+**Windows:**
+Download from [ARM Developer](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm)
+
+### Build Firmware
 
 ```bash
-# Create build directory
-mkdir build && cd build
+# Build the firmware
+make
 
-# Configure the project
-cmake -DCMAKE_BUILD_TYPE=Release ..
+# Clean build artifacts
+make clean
 
-# Build
-cmake --build .
+# Show memory usage
+make size
 
-# Or for debug build
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-cmake --build .
+# Generate disassembly
+make disasm
 ```
 
-### Build Artifacts
+Build outputs:
+- `build/stm32_firmware.elf` - ELF executable
+- `build/stm32_firmware.bin` - Binary image for flashing
+- `build/stm32_firmware.hex` - Intel HEX format
+- `build/stm32_firmware.map` - Memory map
 
-After a successful build, you'll find these files in the `build/` directory:
+### Flash Firmware to Hardware
 
-- `stm32l4-project.elf` - ELF executable (for debugging)
-- `stm32l4-project.hex` - Intel HEX format (for flashing)
-- `stm32l4-project.bin` - Binary format (for flashing)
-- `stm32l4-project.map` - Memory map file
-
-## Flashing and Running
-
-After building and flashing the firmware, you should see LD1 (the green LED on the Nucleo board) blinking continuously. This is the embedded "Hello World" program.
-
-You can flash the firmware using various tools:
-
-### Using ST-Link
+**Using ST-Link:**
 ```bash
-st-flash write build/stm32l4-project.bin 0x08000000
+make flash-stlink
 ```
 
-### Using OpenOCD
+**Using J-Link (Segger):**
 ```bash
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg \
-  -c "program build/stm32l4-project.elf verify reset exit"
+make flash-jlink
 ```
 
-## GitHub Actions CI/CD
+**Using OpenOCD:**
+```bash
+make flash-openocd
+```
 
-The project includes a GitHub Actions workflow that automatically:
+### Run Unit Tests
 
-1. Checks out the code
-2. Installs the ARM GCC toolchain
-3. Builds the project
-4. Uploads the firmware artifacts
+```bash
+cd tests
+make test
+```
 
-The workflow runs on:
-- Push to `main`, `develop`, or `copilot/**` branches
-- Pull requests to `main` or `develop`
-- Manual trigger via workflow_dispatch
+## 🧪 Testing
 
-Build artifacts are available in the Actions tab after each successful build.
+### Unit Testing Framework
 
-## Customization
+This project uses [Unity](https://github.com/ThrowTheSwitch/Unity) - a lightweight unit testing framework for C.
 
-### Modifying LED Behavior
+#### Running Tests Locally
 
-To change the LED toggle speed, modify the delay value in `src/main.c`:
+```bash
+cd tests
+make test
+```
+
+#### Test Coverage
+
+Current test suite covers:
+- `add_numbers()` - Mathematical operations
+- `is_valid_temperature()` - Input validation and boundary conditions
+
+#### Adding New Tests
+
+1. Create test functions in `tests/test_main.c`:
 ```c
-Delay(500000);  // Increase for slower, decrease for faster blinking
+void test_my_function(void)
+{
+    TEST_ASSERT_EQUAL(expected, actual);
+}
 ```
 
-### Using STM32CubeMX
+2. Register in `main()`:
+```c
+RUN_TEST(test_my_function);
+```
 
-This project is designed to work with STM32CubeMX for peripheral configuration:
-1. Open STM32CubeMX and create a new project for STM32L476RG
-2. Configure peripherals as needed
-3. Generate code with "Makefile" or "CMake" toolchain
-4. Copy the generated HAL drivers to this project
-5. Update `CMakeLists.txt` to include HAL sources
+## 🔍 Code Quality
+
+### Static Analysis
+
+Run cppcheck locally:
+```bash
+cppcheck --enable=all -I inc src/*.c
+```
+
+## 🤖 CI/CD Pipelines
+
+GitHub Actions automatically run on every push and pull request:
+
+> **Note**: Firmware build automation is not included. See the note on Build Pipeline at the top of this README for explanation.
+
+### 1. **Unit Tests** (`.github/workflows/test.yml`)
+- Compiles tests with native GCC
+- Runs all test suites
+- Reports test results
+- Uploads test artifacts
+
+### 2. **Static Analysis** (`.github/workflows/static-analysis.yml`)
+- Runs cppcheck on source code
+- Checks for common coding errors
+- Enforces coding standards
+- Fails on critical issues
+
+## 📊 Workflow Status
+
+Check the [Actions tab](https://github.com/gpmontt/c-action-test/actions) to see workflow runs and download artifacts.
+
+## 🎓 Learning Resources
+
+This project is designed to help understand:
+- Embedded firmware build systems (local development)
+- Cross-compilation for ARM (via Makefile)
+- Unit testing for embedded systems
+- CI/CD for code quality (testing, analysis)
+- Static analysis and code quality
+
+## 🔧 Configuration
 
 ### Target MCU
+Default: STM32F4 series (Cortex-M4)
 
-To use a different STM32L4 variant, modify:
-
-1. `CMakeLists.txt`: Update `MCU_MODEL` (e.g., `STM32L432xx`, `STM32L496xx`)
-2. Linker script: Adjust memory sizes in `STM32L476RGTx_FLASH.ld`
-3. Startup file: Use appropriate startup file for your MCU
+To change the target:
+1. Edit `Makefile` - Update `MCU` variable
+2. Edit `startup/stm32_linker.ld` - Adjust memory sizes
+3. Update `startup/startup_stm32.c` - Add peripheral interrupts if needed
 
 ### Compiler Flags
+See `Makefile` for compiler and linker flags. Key flags:
+- `-mcpu=cortex-m4` - Target CPU
+- `-mthumb` - Thumb instruction set
+- `-Wall -Wextra -Werror` - Enable warnings
+- `-O2` - Optimization level
+- `-g` - Debug symbols
 
-Edit `CMakeLists.txt` to modify:
-- Optimization level: `-O0`, `-O1`, `-O2`, `-O3`, `-Os`
-- Debug info: `-g`, `-g3`
-- Warning levels: `-Wall`, `-Wextra`, `-Wpedantic`
+## 📈 Suggested Improvements
 
-## Adding HAL/LL Drivers
+Based on best practices for embedded CI/CD, consider creating issues for:
 
-To use STM32 HAL or LL drivers:
+### High Priority
+1. **Code Coverage Analysis**
+   - Integrate gcov/lcov for test coverage metrics
+   - Add coverage reporting to CI pipeline
+   - Set minimum coverage thresholds
 
-1. Download STM32CubeL4 from ST website
-2. Copy the drivers to your project:
-   - `Drivers/STM32L4xx_HAL_Driver/`
-   - `Drivers/CMSIS/`
-3. Update `CMakeLists.txt` to include driver sources and headers
-4. Configure HAL in `stm32l4xx_hal_conf.h`
+2. **Hardware-in-the-Loop (HIL) Testing**
+   - Add Renode or QEMU for emulation
+   - Run firmware tests in emulated environment
+   - Validate hardware interactions
 
-## Debugging
+3. **Security Analysis**
+   - Add static security analysis (e.g., Coverity)
+   - Scan for vulnerabilities in dependencies
+   - Implement secure boot verification
 
-### Using GDB with OpenOCD
+### Medium Priority
+4. **Documentation Generation**
+   - Integrate Doxygen for API documentation
+   - Auto-generate docs on each release
+   - Host documentation on GitHub Pages
 
-```bash
-# Terminal 1: Start OpenOCD
-openocd -f interface/stlink.cfg -f target/stm32l4x.cfg
+5. **Release Automation**
+   - Create tagged releases automatically
+   - Generate release notes from commits
+   - Package firmware with metadata
 
-# Terminal 2: Start GDB
-arm-none-eabi-gdb build/stm32l4-project.elf
-(gdb) target extended-remote :3333
-(gdb) load
-(gdb) monitor reset halt
-(gdb) continue
-```
+6. **Performance Testing**
+   - Add benchmarks for critical functions
+   - Track performance regressions
+   - Profile memory and execution time
 
-## Contributing
+7. **Lint Integration**
+   - Add clang-tidy for more checks
+   - Integrate MISRA C compliance checking
+   - Add custom lint rules
 
-Contributions are welcome! Please follow these guidelines:
+### Low Priority
+8. **Multi-platform Support**
+   - Test builds on Windows/macOS runners
+   - Support different toolchain versions
+   - Cross-platform scripts
+
+9. **Dependency Management**
+   - Add external library management
+   - Version control for dependencies
+   - Automated security updates
+
+10. **Advanced Testing**
+    - Integration tests
+    - Regression test suites
+    - Fuzz testing for robust inputs
+
+## 📝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Ensure the project builds successfully
+4. Run tests: `cd tests && make test`
 5. Submit a pull request
 
-## License
+All PRs must pass CI checks before merging.
 
-This project is provided as-is for educational and development purposes.
+## 📄 License
 
-## Resources
+This project is provided as-is for educational purposes.
 
-- [STM32L4 Series](https://www.st.com/en/microcontrollers-microprocessors/stm32l4-series.html)
-- [ARM GCC Toolchain](https://developer.arm.com/downloads/-/gnu-rm)
-- [CMake Documentation](https://cmake.org/documentation/)
-- [STM32CubeL4](https://www.st.com/en/embedded-software/stm32cubel4.html)
+## 🤝 Support
+
+For questions or issues, please open an issue on GitHub.
+
+---
+
+**Happy Embedded Development! 🚀**

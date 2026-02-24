@@ -1,0 +1,38 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install GCC for native unit tests
+      run: |
+        # Unit tests run natively on the host (not cross-compiled for ARM)
+        # This is standard practice for embedded unit testing
+        # For HAL-based integration tests, use the ARM toolchain in build.yml
+        sudo apt-get update
+        sudo apt-get install -y gcc build-essential
+    
+    - name: Run unit tests
+      run: |
+        cd tests
+        make test
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: tests/build/
+        retention-days: 30

@@ -1,24 +1,15 @@
-# Build directories
-build/
-Build/
-BUILD/
-
-# CMake
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-Makefile
-*.cmake
-
 # Build artifacts
 *.o
 *.elf
-*.hex
 *.bin
+*.hex
 *.map
-*.d
 *.lst
-*.su
+*.d
+
+# Build directories
+build/
+obj/
 
 # IDE and editor files
 .vscode/
@@ -26,9 +17,18 @@ Makefile
 *.swp
 *.swo
 *~
-.DS_Store
 
-# Temporary files
-/tmp/
-*.tmp
-*.bak
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+tests/build/
+tests/*.out
+tests/*.log
+
+# Dependencies
+*.a
+
+# Debug files
+*.su
